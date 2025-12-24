@@ -1,50 +1,80 @@
+
 # 🎮 Steam GameFinder
 
-> **AI-powered semantic game recommendation engine for Steam**
+> **AI-powered semantic game discovery and intelligent recommendation system for Steam**
 
-Steam GameFinder is a **backend-first, AI-powered game discovery system** for Steam.  
-Instead of relying on rigid filters or keyword search, it allows users to discover games using **natural language intent** such as:
+Steam GameFinder is an **end-to-end AI-driven game discovery system** that allows users to find Steam games using **natural language intent** instead of rigid filters or keyword-based search.
 
-- “cozy pixel-art farming sim”
-- “dark fantasy open-world RPG”
-- “story-rich cyberpunk game”
+Rather than forcing users to manually select genres, tags, or popularity thresholds, the system understands *what the user wants to play* based on intent, mood, mechanics, and themes.
 
-The backend focuses on **semantic understanding, ranking quality, and explainability**, while leaving **UI/UX design fully flexible** for frontend developers.
+Examples of supported queries:
+- “cozy pixel-art farming sim with relaxing vibes”
+- “dark fantasy open-world RPG with deep lore”
+- “story-rich cyberpunk game with strong characters”
 
----
-
-## 🌐 Live API
-
-- **Backend API (Swagger UI):** https://<your-space>.hf.space/docs  
+The project is designed to reflect **real-world recommendation system engineering**, focusing on:
+- semantic understanding
+- high-quality ranking
+- logical consistency
+- scalable system design
 
 ---
 
 ## ✨ Core Capabilities
 
-- 🧠 **Natural language understanding**
-  - Interprets user intent, mood, genre, and mechanics.
+- 🧠 **Natural Language Intent Understanding**  
+  Extracts user intent, mood, genre preferences, and gameplay mechanics from free-form queries using LLM-assisted parsing.
 
-- 🔎 **Semantic recommendations**
-  - Uses high-quality E5 embeddings for similarity search.
+- 🔎 **Semantic Retrieval (Beyond Keywords)**  
+  Dense embeddings capture contextual meaning rather than relying on surface-level keyword overlap.
 
-- ⚡ **Hybrid ranking engine**
-  - Combines semantic relevance, popularity, quality signals, and fuzzy title matching.
+- ⚡ **Production-Style Hybrid Ranking Engine**  
+  Combines semantic relevance with popularity, quality metrics, fuzzy title matching, and negative penalties to produce stable, high-quality recommendations.
 
-- 🤖 **AI explanation layer**
-  - Explains *why* a game matches the user’s query.
+- 🤖 **Reasoned Recommendation Logic**  
+  Every recommendation is backed by structured reasoning at the backend level, enabling explainability, debugging, and trust in the ranking pipeline.
 
-- 📦 **Backend-first design**
-  - Clean JSON contracts make it easy to build any UI on top.
+- 🧩 **Modular, Extensible Architecture**  
+  Clear separation of concerns allows independent evolution of ML, ranking logic, APIs, and frontend layers.
 
 ---
 
-## 🧱 Tech Stack (Backend & ML)
+## 🧠 What Makes This Project Different (Engineering Highlights)
 
-- **API Framework:** FastAPI
-- **Vector Search:** Pinecone (cosine similarity, serverless)
-- **Embeddings:** `intfloat/multilingual-e5-large`
-- **LLM Provider:** Groq (LLaMA 3.1)
+This project intentionally avoids being a “toy LLM demo” and instead mirrors **practical recommendation systems used in production environments**.
+
+- **Semantic search is not the final answer**  
+  Vector similarity is treated as a *candidate generation step*, followed by a carefully weighted re-ranking pipeline.
+
+- **Signal engineering over raw model output**  
+  Engineered features such as review ratios, popularity heuristics, quality scores, and exclusion penalties significantly improve result quality and robustness.
+
+- **Explainability-first mindset**  
+  Although explanations are not directly surfaced in the UI, every result is accompanied by backend-level reasoning — a critical requirement for trustworthy AI systems.
+
+- **Scalability-aware design decisions**  
+  Indexing only the top 5,000 high-signal games balances relevance, cost, latency, and ranking stability.
+
+- **End-to-end system ownership**  
+  Covers dataset processing, embedding strategy, vector indexing, ranking logic, API contracts, deployment, and frontend integration — reflecting full project ownership.
+
+---
+
+## 🧱 Tech Stack
+
+### Backend & ML
+- **API Framework:** FastAPI  
+- **Vector Database:** Pinecone (cosine similarity, serverless)  
+- **Embedding Model:** `intfloat/multilingual-e5-large`  
+- **LLM Inference:** Groq (LLaMA 3.1)  
 - **Deployment:** Hugging Face Spaces (Docker)
+
+### Frontend
+- **Initial UI Scaffold:** v0.dev  
+- **Customization:** Manual UI refinement aligned with backend APIs and response structure  
+- **Focus:** Dynamic data-driven components, API consumption, and interaction design
+
+> The project emphasizes **system design and integration**, not just isolated ML components.
 
 ---
 
@@ -53,46 +83,48 @@ The backend focuses on **semantic understanding, ranking quality, and explainabi
 ```
 User Query (JSON)
    ↓
-LLM Intent & Tag Extraction
+LLM-based Intent & Tag Extraction
    ↓
-Semantic Embedding (E5)
+Semantic Embedding Generation (E5)
    ↓
-Pinecone Vector Search
+Candidate Retrieval (Pinecone)
    ↓
-Hybrid Re-ranking
+Hybrid Re-ranking Engine
    ↓
-AI Explanation Layer
+Reasoned Recommendation Output
    ↓
-JSON Response
+Structured JSON Response
 ```
 
 ---
 
-## 🌲 Pinecone Vector Database (Indexing Pipeline)
+## 🌲 Vector Database & Indexing Pipeline
 
 ### Dataset
 - **Source:** FronkonGames/steam-games-dataset (Hugging Face)
-- Each entry represents a Steam app with metadata, tags, genres, reviews, and media.
+
+Each entry represents a Steam game with metadata such as genres, tags, reviews, ownership estimates, and external ratings.
 
 ### Data Processing & Feature Engineering
 For each game:
-- Clean and normalize text (ASCII-safe)
-- Truncate long descriptions
-- Parse list-like fields (genres, tags, categories)
-- Compute derived signals:
+- Text cleaning and normalization (ASCII-safe)
+- Truncation of long descriptions
+- Structured parsing of genres, tags, and categories
+- Derived ranking signals:
   - `reviews = positive + negative`
   - `positive_ratio = positive / total`
   - `popularity = owners + reviews * 5 + metacritic * 1000`
 
-Only the **top 5,000 games by popularity** are indexed to maintain relevance and performance.
+To maintain **ranking quality and system performance**, only the **top 5,000 games by popularity** are indexed.
 
 ---
 
-### Embedding Strategy
+## 🧠 Embedding Strategy
 
-- Model: `intfloat/multilingual-e5-large`
-- Vector dimension: **1024**
-- E5 best-practice formatting:
+- **Model:** `intfloat/multilingual-e5-large`  
+- **Vector Dimension:** 1024  
+
+Best-practice formatting:
 
 ```
 passage: Game <title>.
@@ -101,130 +133,60 @@ Tags: <tags>.
 Description: <description>.
 ```
 
-At query time, user input is embedded using:
-
+Query-time embedding:
 ```
 query: <user query>
 ```
 
----
-
-### Pinecone Index Configuration
-
-- Metric: cosine similarity
-- Type: serverless
-- Cloud: AWS (us-east-1)
-- Namespace: `games`
-
-Vectors store **semantic meaning only**, while all metadata is stored alongside for ranking and UI usage.
+This ensures strong semantic alignment between user intent and indexed content.
 
 ---
 
-## 🔎 Recommendation Engine (Backend Logic)
+## 🔎 Recommendation Engine
 
 ### 1️⃣ Intent Extraction
-- Groq LLM extracts 5–8 semantic tags from the query.
-- Tags are expanded using synonym rules (e.g. *cozy → relaxing, chill*).
+- LLaMA 3.1 extracts 5–8 high-level semantic tags
+- Synonym expansion improves recall (e.g., *cozy → relaxing, chill*)
 
-### 2️⃣ Vector Retrieval
-- Top 200 semantic candidates fetched from Pinecone.
+### 2️⃣ Candidate Retrieval
+- Top semantic matches retrieved from Pinecone
 
 ### 3️⃣ Hybrid Re-ranking
 Each candidate is scored using:
 - Semantic similarity
-- Exact + fuzzy title matching (typo tolerant)
-- Popularity (log-scaled reviews)
-- Quality signals (Metacritic, positive ratio)
+- Exact + fuzzy title matching
+- Popularity (log-scaled)
+- Quality metrics (Metacritic, positive review ratio)
 - Tag overlap
-- Negative penalties (DLCs, trainers, non-games)
+- Negative penalties (DLCs, trainers, non-game entries)
 
 Different weighting strategies are applied for:
+- **Exploratory discovery queries**
 - **Specific title searches**
-- **Open-ended recommendations**
 
 ---
 
-## 🤖 AI Chat Assistant
+## 🤖 Conversational Assistant
 
-The backend exposes a conversational endpoint that:
-- Uses LLaMA 3.1 via Groq
-- Maintains short-term context (last 10 messages)
-- Explains recommendations in natural language
-- Supports follow-up questions and comparisons
+A conversational endpoint supports:
+- Follow-up queries and clarifications
+- Comparative questions between games
+- Reasoned natural-language explanations
+
+This component reinforces trust and transparency in the recommendation pipeline.
 
 ---
 
-## 🔌 API Contract (Frontend-Friendly)
+## 🔌 API Example
 
 ### `POST /recommend`
 
-**Request**
 ```json
 {
   "query": "open world rpg with great story",
-  "top_k": 12,
-  "exclude_ids": []
+  "top_k": 12
 }
 ```
-
-**Response (example)**
-```json
-{
-  "id": "1091500",
-  "title": "Cyberpunk 2077",
-  "description": "...",
-  "genres": ["RPG", "Open World"],
-  "tags": ["Cyberpunk", "Story Rich"],
-  "price": 59.99,
-  "image": "https://...",
-  "score": 0.87,
-  "reviews": 123456,
-  "positive_ratio": 0.92,
-  "metacritic": 86,
-  "release_date": "2020-12-10",
-  "screenshots": ["https://...", "..."],
-  "trailer": "https://..."
-}
-```
-
----
-
-### `POST /chat`
-
-**Request**
-```json
-{
-  "message": "Why did you recommend The Witcher 3?",
-  "history": []
-}
-```
-
-**Response**
-```json
-{
-  "answer": "The Witcher 3 matches your request because...",
-  "related_games": []
-}
-```
-
----
-
-## 🎨 Frontend Integration Philosophy
-
-This project intentionally **does not enforce any frontend stack or design**.
-
-The backend:
-- Accepts **clean JSON input**
-- Returns **rich, structured JSON output**
-- Is fully **UI-agnostic**
-
-You are free to:
-- Build a minimal search UI
-- Design a rich carousel-based game browser
-- Add chat-based discovery
-- Experiment with mobile, desktop, or voice interfaces
-
-As long as your frontend respects the API contract, **you can innovate freely**.
 
 ---
 
@@ -234,25 +196,22 @@ As long as your frontend respects the API contract, **you can innovate freely**.
 uvicorn app.main:app --reload --port 8000
 ```
 
-Swagger UI:
-http://localhost:8000/docs
-
 ---
 
-## 🛣️ Roadmap
+## 🛣️ Future Improvements
 
-- User profiles & personalization
-- Game detail analytics
-- Multilingual recommendations
-- Offline ranking evaluation
-- A/B testing for ranking strategies
+- Personalized recommendations using user profiles
+- Offline ranking evaluation and metrics
+- Multilingual discovery support
+- A/B testing of ranking strategies
+- Advanced frontend explorations
 
 ---
 
 ## ⚠️ Disclaimer
 
 Steam data, images, and trademarks belong to their respective owners.  
-This project is for **educational and demonstrational purposes only**.
+This project is intended for **educational, research, and portfolio purposes**.
 
 ---
 
