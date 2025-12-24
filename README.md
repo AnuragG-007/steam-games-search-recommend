@@ -2,69 +2,56 @@
 
 > **AI-powered semantic game recommendation engine for Steam**
 
-Steam GameFinder lets users discover Steam games using **natural language**, not rigid filters or keyword-only search.
-Describe the *vibe* you want — _“cozy pixel-art farming sim”_, _“dark fantasy open-world RPG”_, or _“story-driven cyberpunk game”_ — and the system finds games that genuinely match your intent.
+Steam GameFinder is a **backend-first, AI-powered game discovery system** for Steam.  
+Instead of relying on rigid filters or keyword search, it allows users to discover games using **natural language intent** such as:
 
-Built with **semantic embeddings**, **vector search**, and an **AI reasoning layer**.
+- “cozy pixel-art farming sim”
+- “dark fantasy open-world RPG”
+- “story-rich cyberpunk game”
 
----
-
-## 🌐 Live Demo
-
-- **Frontend:** https://<your-frontend>.vercel.app  
-- **Backend API:** https://<your-space>.hf.space/docs  
+The backend focuses on **semantic understanding, ranking quality, and explainability**, while leaving **UI/UX design fully flexible** for frontend developers.
 
 ---
 
-## ✨ Features
+## 🌐 Live API
 
-- 🧠 **Natural language search**
-  - Search games by mood, genre, mechanics, or theme.
+- **Backend API (Swagger UI):** https://<your-space>.hf.space/docs  
+
+---
+
+## ✨ Core Capabilities
+
+- 🧠 **Natural language understanding**
+  - Interprets user intent, mood, genre, and mechanics.
 
 - 🔎 **Semantic recommendations**
-  - Uses `intfloat/multilingual-e5-large` embeddings for high-quality similarity matching.
-
-- 🤖 **AI explanation assistant**
-  - Explains *why* a game was recommended using an LLM reasoning layer.
-
-- 🖼️ **Rich game cards**
-  - Genres, tags, ratings, price, screenshots, and trailers.
+  - Uses high-quality E5 embeddings for similarity search.
 
 - ⚡ **Hybrid ranking engine**
-  - Combines semantic similarity, popularity, quality signals, and fuzzy title matching.
+  - Combines semantic relevance, popularity, quality signals, and fuzzy title matching.
 
-- ☁️ **Production-ready deployment**
-  - Frontend on Vercel, backend on Hugging Face Spaces, vector database on Pinecone.
+- 🤖 **AI explanation layer**
+  - Explains *why* a game matches the user’s query.
 
----
-
-## 🧱 Tech Stack
-
-### Frontend
-- Next.js
-- React + TypeScript
-- Tailwind CSS / shadcn UI
-- Deployed on **Vercel**
-
-### Backend
-- FastAPI
-- Uvicorn
-- Deployed on **Hugging Face Spaces (Docker)**
-
-### ML / AI
-- sentence-transformers
-- `intfloat/multilingual-e5-large`
-- Groq (LLM-based intent extraction & explanations)
-
-### Vector Store
-- Pinecone (cosine similarity + hybrid reranking)
+- 📦 **Backend-first design**
+  - Clean JSON contracts make it easy to build any UI on top.
 
 ---
 
-## 🧠 System Architecture
+## 🧱 Tech Stack (Backend & ML)
+
+- **API Framework:** FastAPI
+- **Vector Search:** Pinecone (cosine similarity, serverless)
+- **Embeddings:** `intfloat/multilingual-e5-large`
+- **LLM Provider:** Groq (LLaMA 3.1)
+- **Deployment:** Hugging Face Spaces (Docker)
+
+---
+
+## 🧠 High-Level Architecture
 
 ```
-User Query
+User Query (JSON)
    ↓
 LLM Intent & Tag Extraction
    ↓
@@ -72,174 +59,139 @@ Semantic Embedding (E5)
    ↓
 Pinecone Vector Search
    ↓
-Hybrid Reranking
+Hybrid Re-ranking
    ↓
 AI Explanation Layer
    ↓
-Frontend UI
+JSON Response
 ```
 
 ---
 
-## 🚀 Getting Started (Local Development)
+## 🌲 Pinecone Vector Database (Indexing Pipeline)
 
-### Prerequisites
-- Node.js (LTS)
-- Python 3.11+
-- pip
-- Pinecone account
-- Hugging Face account
-- Groq API key
+### Dataset
+- **Source:** FronkonGames/steam-games-dataset (Hugging Face)
+- Each entry represents a Steam app with metadata, tags, genres, reviews, and media.
 
----
+### Data Processing & Feature Engineering
+For each game:
+- Clean and normalize text (ASCII-safe)
+- Truncate long descriptions
+- Parse list-like fields (genres, tags, categories)
+- Compute derived signals:
+  - `reviews = positive + negative`
+  - `positive_ratio = positive / total`
+  - `popularity = owners + reviews * 5 + metacritic * 1000`
 
-### 1️⃣ Clone the Repository
-
-```bash
-git clone https://github.com/<your-username>/steam-games-recommender.git
-cd steam-games-recommender
-```
-
----
-
-### 2️⃣ Backend Setup (FastAPI)
-
-```bash
-cd backend
-python -m venv .venv
-```
-
-Activate the virtual environment:
-
-```bash
-# Windows
-.venv\Scripts\activate
-
-# macOS / Linux
-source .venv/bin/activate
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Create a `.env` file inside `backend/`:
-
-```env
-GROQ_API_KEY=your_groq_key
-HUGGINGFACE_TOKEN=your_hf_token
-PINECONE_API_KEY=your_pinecone_key
-PINECONE_INDEX_NAME=your_index_name
-```
-
-Run the backend:
-
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-API docs will be available at:
-http://localhost:8000/docs
+Only the **top 5,000 games by popularity** are indexed to maintain relevance and performance.
 
 ---
 
-### 3️⃣ Frontend Setup (Next.js)
+### Embedding Strategy
 
-```bash
-cd ../frontend
-npm install
+- Model: `intfloat/multilingual-e5-large`
+- Vector dimension: **1024**
+- E5 best-practice formatting:
+
+```
+passage: Game <title>.
+Genres: <genres>.
+Tags: <tags>.
+Description: <description>.
 ```
 
-Create `.env.local`:
+At query time, user input is embedded using:
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
-
-Run the dev server:
-
-```bash
-npm run dev
-```
-
-Open:
-http://localhost:3000
-
----
-
-## ☁️ Deployment
-
-### Frontend (Vercel)
-
-1. Push the repository to GitHub  
-2. Import the project into Vercel  
-3. Set the environment variable:
-
-```env
-NEXT_PUBLIC_API_URL=https://<your-space>.hf.space
-```
-
-4. Deploy 🚀
-
----
-
-### Backend (Hugging Face Spaces – Docker)
-
-Create a **Docker Space** and add the following files.
-
-#### `Dockerfile`
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
-```
-
-Add secrets in **Spaces → Variables & secrets**:
-
-- GROQ_API_KEY
-- HUGGINGFACE_TOKEN
-- PINECONE_API_KEY
-- PINECONE_INDEX_NAME
-
----
-
-## 🔌 API Overview
-
-### `GET /`
-Health check
-
-```json
-{ "status": "Backend is running 🚀" }
+query: <user query>
 ```
 
 ---
+
+### Pinecone Index Configuration
+
+- Metric: cosine similarity
+- Type: serverless
+- Cloud: AWS (us-east-1)
+- Namespace: `games`
+
+Vectors store **semantic meaning only**, while all metadata is stored alongside for ranking and UI usage.
+
+---
+
+## 🔎 Recommendation Engine (Backend Logic)
+
+### 1️⃣ Intent Extraction
+- Groq LLM extracts 5–8 semantic tags from the query.
+- Tags are expanded using synonym rules (e.g. *cozy → relaxing, chill*).
+
+### 2️⃣ Vector Retrieval
+- Top 200 semantic candidates fetched from Pinecone.
+
+### 3️⃣ Hybrid Re-ranking
+Each candidate is scored using:
+- Semantic similarity
+- Exact + fuzzy title matching (typo tolerant)
+- Popularity (log-scaled reviews)
+- Quality signals (Metacritic, positive ratio)
+- Tag overlap
+- Negative penalties (DLCs, trainers, non-games)
+
+Different weighting strategies are applied for:
+- **Specific title searches**
+- **Open-ended recommendations**
+
+---
+
+## 🤖 AI Chat Assistant
+
+The backend exposes a conversational endpoint that:
+- Uses LLaMA 3.1 via Groq
+- Maintains short-term context (last 10 messages)
+- Explains recommendations in natural language
+- Supports follow-up questions and comparisons
+
+---
+
+## 🔌 API Contract (Frontend-Friendly)
 
 ### `POST /recommend`
 
+**Request**
 ```json
 {
   "query": "open world rpg with great story",
-  "top_k": 32,
+  "top_k": 12,
   "exclude_ids": []
 }
 ```
 
-Returns a ranked list of recommended games.
+**Response (example)**
+```json
+{
+  "id": "1091500",
+  "title": "Cyberpunk 2077",
+  "description": "...",
+  "genres": ["RPG", "Open World"],
+  "tags": ["Cyberpunk", "Story Rich"],
+  "price": 59.99,
+  "image": "https://...",
+  "score": 0.87,
+  "reviews": 123456,
+  "positive_ratio": 0.92,
+  "metacritic": 86,
+  "release_date": "2020-12-10",
+  "screenshots": ["https://...", "..."],
+  "trailer": "https://..."
+}
+```
 
 ---
 
 ### `POST /chat`
 
+**Request**
 ```json
 {
   "message": "Why did you recommend The Witcher 3?",
@@ -247,17 +199,53 @@ Returns a ranked list of recommended games.
 }
 ```
 
-Returns an AI-generated explanation.
+**Response**
+```json
+{
+  "answer": "The Witcher 3 matches your request because...",
+  "related_games": []
+}
+```
+
+---
+
+## 🎨 Frontend Integration Philosophy
+
+This project intentionally **does not enforce any frontend stack or design**.
+
+The backend:
+- Accepts **clean JSON input**
+- Returns **rich, structured JSON output**
+- Is fully **UI-agnostic**
+
+You are free to:
+- Build a minimal search UI
+- Design a rich carousel-based game browser
+- Add chat-based discovery
+- Experiment with mobile, desktop, or voice interfaces
+
+As long as your frontend respects the API contract, **you can innovate freely**.
+
+---
+
+## 🚀 Local Development
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+Swagger UI:
+http://localhost:8000/docs
 
 ---
 
 ## 🛣️ Roadmap
 
-- Game detail pages with deeper analytics
-- User accounts and saved favourites
-- Personalised recommendations
-- Multilingual support
-- Offline evaluation metrics
+- User profiles & personalization
+- Game detail analytics
+- Multilingual recommendations
+- Offline ranking evaluation
+- A/B testing for ranking strategies
 
 ---
 
@@ -268,4 +256,4 @@ This project is for **educational and demonstrational purposes only**.
 
 ---
 
-⭐ If you like this project, consider starring the repository!
+⭐ If you find this project useful, consider starring the repository!
