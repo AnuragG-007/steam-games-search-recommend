@@ -1,0 +1,6 @@
+pinecone
+sentence-transformers
+datasets
+pandas
+tqdm
+python-dotenv
