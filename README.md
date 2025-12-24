@@ -1,126 +1,197 @@
-🎮 Steam GameFinder
-AI-powered game recommendation engine for Steam.
-Frontend: Next.js (Vercel) - Backend: FastAPI + Sentence Transformers (Hugging Face Spaces).
-​
+# 🎮 Steam GameFinder
 
-Live demo: https://<your-frontend>.vercel.app
+> **AI-powered semantic game recommendation engine for Steam**
 
-✨ Features
-Natural language search for Steam games (e.g. "cozy pixel-art farming sim").
+Steam GameFinder lets users discover Steam games using **natural language**, not rigid filters or keyword-only search.
+Describe the *vibe* you want — _“cozy pixel-art farming sim”_, _“dark fantasy open-world RPG”_, or _“story-driven cyberpunk game”_ — and the system finds games that genuinely match your intent.
 
-Semantic embeddings using intfloat/multilingual-e5-large for high-quality recommendations.
-​
+Built with **semantic embeddings**, **vector search**, and an **AI reasoning layer**.
 
-AI chat assistant that explains why each game fits your vibe.
+---
 
-Rich game cards with tags, ratings, price, screenshots and trailers.
+## 🌐 Live Demo
 
-Deployed frontend on Vercel and backend on Hugging Face Spaces.
-​
+- **Frontend:** https://<your-frontend>.vercel.app  
+- **Backend API:** https://<your-space>.hf.space/docs  
 
-🧱 Tech Stack
-Frontend: Next.js, React, TypeScript, Tailwind CSS / shadcn UI.
-​
+---
 
-Backend: FastAPI, Uvicorn.
-​
+## ✨ Features
 
-ML / AI: sentence-transformers, intfloat/multilingual-e5-large for embeddings.
-​
+- 🧠 **Natural language search**
+  - Search games by mood, genre, mechanics, or theme.
 
-Vector store: Pinecone.
-​
+- 🔎 **Semantic recommendations**
+  - Uses `intfloat/multilingual-e5-large` embeddings for high-quality similarity matching.
 
-Infra: Vercel (frontend), Hugging Face Spaces (backend).
-​
+- 🤖 **AI explanation assistant**
+  - Explains *why* a game was recommended using an LLM reasoning layer.
 
-🚀 Getting Started (Local)
-Prerequisites
-Node.js (LTS)
+- 🖼️ **Rich game cards**
+  - Genres, tags, ratings, price, screenshots, and trailers.
 
-Python 3.11+
+- ⚡ **Hybrid ranking engine**
+  - Combines semantic similarity, popularity, quality signals, and fuzzy title matching.
 
-pip
+- ☁️ **Production-ready deployment**
+  - Frontend on Vercel, backend on Hugging Face Spaces, vector database on Pinecone.
 
-A Hugging Face account and access to intfloat/multilingual-e5-large.
-​
+---
 
-1. Clone the repo
-bash
+## 🧱 Tech Stack
+
+### Frontend
+- Next.js
+- React + TypeScript
+- Tailwind CSS / shadcn UI
+- Deployed on **Vercel**
+
+### Backend
+- FastAPI
+- Uvicorn
+- Deployed on **Hugging Face Spaces (Docker)**
+
+### ML / AI
+- sentence-transformers
+- `intfloat/multilingual-e5-large`
+- Groq (LLM-based intent extraction & explanations)
+
+### Vector Store
+- Pinecone (cosine similarity + hybrid reranking)
+
+---
+
+## 🧠 System Architecture
+
+```
+User Query
+   ↓
+LLM Intent & Tag Extraction
+   ↓
+Semantic Embedding (E5)
+   ↓
+Pinecone Vector Search
+   ↓
+Hybrid Reranking
+   ↓
+AI Explanation Layer
+   ↓
+Frontend UI
+```
+
+---
+
+## 🚀 Getting Started (Local Development)
+
+### Prerequisites
+- Node.js (LTS)
+- Python 3.11+
+- pip
+- Pinecone account
+- Hugging Face account
+- Groq API key
+
+---
+
+### 1️⃣ Clone the Repository
+
+```bash
 git clone https://github.com/<your-username>/steam-games-recommender.git
 cd steam-games-recommender
-2. Backend setup
-bash
+```
+
+---
+
+### 2️⃣ Backend Setup (FastAPI)
+
+```bash
 cd backend
 python -m venv .venv
-# Windows:
-# .venv\Scripts\activate
-# macOS / Linux:
+```
+
+Activate the virtual environment:
+
+```bash
+# Windows
+.venv\Scripts\activate
+
+# macOS / Linux
 source .venv/bin/activate
+```
 
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
-Create a .env file in backend/:
+```
 
-text
+Create a `.env` file inside `backend/`:
+
+```env
 GROQ_API_KEY=your_groq_key
 HUGGINGFACE_TOKEN=your_hf_token
 PINECONE_API_KEY=your_pinecone_key
 PINECONE_INDEX_NAME=your_index_name
-PINECONE_ENVIRONMENT=your_region
-Run the backend locally:
+```
 
-bash
+Run the backend:
+
+```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-Open http://localhost:8000/docs to explore the API.
+```
 
-3. Frontend setup
-bash
+API docs will be available at:
+http://localhost:8000/docs
+
+---
+
+### 3️⃣ Frontend Setup (Next.js)
+
+```bash
 cd ../frontend
 npm install
-Create .env.local in frontend/:
+```
 
-text
+Create `.env.local`:
+
+```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
 Run the dev server:
 
-bash
+```bash
 npm run dev
-Open http://localhost:3000 to use the app.
+```
 
-☁️ Deployment
-Frontend (Vercel)
-​
-Push the repo to GitHub.
+Open:
+http://localhost:3000
 
-Import the project into Vercel.
+---
 
-Set environment variables:
+## ☁️ Deployment
 
-text
+### Frontend (Vercel)
+
+1. Push the repository to GitHub  
+2. Import the project into Vercel  
+3. Set the environment variable:
+
+```env
 NEXT_PUBLIC_API_URL=https://<your-space>.hf.space
-Deploy.
+```
 
-Backend (Hugging Face Spaces – Docker)
-​
-Create a new Space:
+4. Deploy 🚀
 
-Type: Docker
-
-Name: steam-backend
-
-Copy the contents of your backend/ folder into the Space repo.
-
-Add a README.md with this front matter:
-
-text
 ---
-title: steam-backend
-sdk: docker
-app_port: 7860
----
-Add a Dockerfile:
 
-text
+### Backend (Hugging Face Spaces – Docker)
+
+Create a **Docker Space** and add the following files.
+
+#### `Dockerfile`
+
+```dockerfile
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -131,89 +202,70 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
-In the Space settings, add your secrets under “Variables & secrets”:
+```
 
-GROQ_API_KEY
+Add secrets in **Spaces → Variables & secrets**:
 
-HUGGINGFACE_TOKEN
+- GROQ_API_KEY
+- HUGGINGFACE_TOKEN
+- PINECONE_API_KEY
+- PINECONE_INDEX_NAME
 
-PINECONE_API_KEY
+---
 
-PINECONE_INDEX_NAME
+## 🔌 API Overview
 
-Any other keys used by your backend
+### `GET /`
+Health check
 
-Spaces will expose them as environment variables inside the container.
-​
-
-🔌 API Overview
-Base URL (local): http://localhost:8000
-Base URL (prod): https://<your-space>.hf.space
-
-GET /
-Health check.
-
-Response:
-
-json
+```json
 { "status": "Backend is running 🚀" }
-POST /recommend
-Body:
+```
 
-json
+---
+
+### `POST /recommend`
+
+```json
 {
   "query": "open world rpg with great story",
-  "top_k": 64,
+  "top_k": 32,
   "exclude_ids": []
 }
-Response: list of game objects:
+```
 
-json
-[
-  {
-    "id": "1091500",
-    "title": "Cyberpunk 2077",
-    "description": "...",
-    "genres": ["RPG", "Open World"],
-    "tags": ["Cyberpunk", "Story Rich"],
-    "price": 59.99,
-    "image": "https://...",
-    "score": 0.87,
-    "reviews": 123456,
-    "positive_ratio": 0.92,
-    "metacritic": 86,
-    "release_date": "2020-12-10",
-    "screenshots": ["https://...", "..."],
-    "trailer": "https://..."
-  }
-]
-POST /chat
-Body:
+Returns a ranked list of recommended games.
 
-json
+---
+
+### `POST /chat`
+
+```json
 {
-  "message": "Why did you recommend Witcher 3?",
+  "message": "Why did you recommend The Witcher 3?",
   "history": []
 }
-Response:
+```
 
-json
-{
-  "answer": "The Witcher 3 matches your request for a story-rich open world RPG because ...",
-  "related_games": []
-}
-📌 Roadmap
-Game detail page with more in-depth analytics.
+Returns an AI-generated explanation.
 
-User accounts with saved favourites and play history.
+---
 
-More languages and personalization for recommendations.
+## 🛣️ Roadmap
 
-🙏 Credits
-Embedding model: intfloat/multilingual-e5-large on Hugging Face.
-​
+- Game detail pages with deeper analytics
+- User accounts and saved favourites
+- Personalised recommendations
+- Multilingual support
+- Offline evaluation metrics
 
-Inspiration and general README structure based on popular GitHub README templates.
-​
+---
 
-Steam data and images belong to their respective owners; used here for educational/demo purposes.
+## ⚠️ Disclaimer
+
+Steam data, images, and trademarks belong to their respective owners.  
+This project is for **educational and demonstrational purposes only**.
+
+---
+
+⭐ If you like this project, consider starring the repository!
