@@ -59,7 +59,7 @@ def positive_ratio(pos, neg):
     return round(pos / total, 2) if total else 0.0
 
 # --- LOAD DATA ---
-print("⬇️ Loading Steam dataset...")
+print("Loading Steam dataset...")
 dataset = load_dataset("FronkonGames/steam-games-dataset", split="train")
 
 print("🧹 Processing data...")
@@ -99,11 +99,11 @@ for row in tqdm(dataset):
 games.sort(key=lambda g: g["popularity"], reverse=True)
 games = games[:MAX_GAMES_TO_INDEX]
 
-print(f"🏆 Indexing top {len(games)} games")
+print(f"Indexing top {len(games)} games")
 
 # --- EMBEDDINGS ---
 device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"🧠 Loading embedding model on {device.upper()}")
+print(f"Loading embedding model on {device.upper()}")
 
 model = SentenceTransformer(MODEL_NAME, device=device)
 
@@ -112,7 +112,7 @@ texts = [
     for g in games
 ]
 
-print("⚡ Generating embeddings...")
+print("Generating embeddings...")
 embeddings = model.encode(
     texts,
     batch_size=64 if device == "cuda" else 16,
@@ -120,7 +120,7 @@ embeddings = model.encode(
 )
 
 # --- PINECONE ---
-print("🌲 Connecting to Pinecone...")
+print("Connecting to Pinecone...")
 pc = Pinecone(api_key=PINECONE_API_KEY)
 
 if INDEX_NAME in pc.list_indexes().names():
@@ -128,7 +128,7 @@ if INDEX_NAME in pc.list_indexes().names():
     pc.delete_index(INDEX_NAME)
     time.sleep(15)
 
-print(f"🔨 Creating index {INDEX_NAME}")
+print(f"Creating index {INDEX_NAME}")
 pc.create_index(
     name=INDEX_NAME,
     dimension=DIMENSION,
@@ -139,7 +139,7 @@ pc.create_index(
 index = pc.Index(INDEX_NAME)
 
 # --- UPSERT ---
-print("🚀 Uploading vectors...")
+print("Uploading vectors...")
 batch_size = 100
 
 for i in tqdm(range(0, len(games), batch_size)):
@@ -157,4 +157,4 @@ for i in tqdm(range(0, len(games), batch_size)):
 
     index.upsert(vectors=vectors, namespace=NAMESPACE)
 
-print("✅ Pinecone index ready!")
+print("Pinecone index ready!")
